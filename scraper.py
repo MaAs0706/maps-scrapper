@@ -33,6 +33,27 @@ def get_place_details(place_id):
     data = response.json()
     return data.get("result", {})
 
+def get_coordinate(place_name):
+    url = "https://maps.googleapis.com/maps/api/geocode/json"
+    params = {
+        "address": place_name,
+        "key": API_KEY
+    }
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    print(f"Status: {data['status']}")  # add this line
+    print(f"Full response: {data}") 
+    
+    if data["results"]:
+        location = data["results"][0]["geometry"]["location"]
+        lat = location["lat"]
+        lng = location["lng"]
+        return f"{lat},{lng}"
+    else:
+        print(f"Could not find the location for {place_name}. Please check the name and try again.")
+        return None
+
 
 def find_no_website(location, radius, place_type):
     print(f"Searching for {place_type}s near {location}...\n")
@@ -80,19 +101,22 @@ def save_to_csv(results, filename="results.csv"):
 
     print(f"\n✅ Saved {len(results)} businesses to {filename}")
 
+place_name = input("Enter a location : ")
+place_type = input("Enter a business type (e.g., restaurant, doctor, gym, lawyer): ")
+location = get_coordinate(place_name)
+if location:
+    results = find_no_website(
+        location=location,
+        radius=5000,
+        place_type=place_type
+    )
 
-results = find_no_website(
-    location="10.0261,76.3083",  # Kochi
-    radius=5000,                  # 5km
-    place_type="doctor"       # try: restaurant, doctor, gym, lawyer
-)
+    print(f"\n🎯 Found {len(results)} businesses without a website!\n")
+    for b in results:
+      print(f"Name    : {b['name']}")
+      print(f"Phone   : {b['phone']}")
+      print(f"Rating  : {b['rating']} ⭐ ({b['reviews']} reviews)")
+      print(f"Address : {b['address']}")
+      print("-" * 40)
 
-print(f"\n🎯 Found {len(results)} businesses without a website!\n")
-for b in results:
-    print(f"Name    : {b['name']}")
-    print(f"Phone   : {b['phone']}")
-    print(f"Rating  : {b['rating']} ⭐ ({b['reviews']} reviews)")
-    print(f"Address : {b['address']}")
-    print("-" * 40)
-
-save_to_csv(results)
+    save_to_csv(results)
