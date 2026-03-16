@@ -1,0 +1,85 @@
+import streamlit as st
+from scraper import get_coordinate, find_no_website, save_to_csv
+import pandas as pd
+
+# ─────────────────────────────────────────
+# Page Config
+# ─────────────────────────────────────────
+st.set_page_config(
+    page_title="Maps Lead Finder",
+    page_icon="📍",
+    layout="wide"
+)
+
+st.title("📍 Google Maps Lead Finder")
+st.write("Find businesses without websites — sorted by urgency")
+
+# ─────────────────────────────────────────
+# Inputs
+# ─────────────────────────────────────────
+col1, col2 = st.columns(2)
+
+with col1:
+    location = st.text_input("📍 Location", placeholder="e.g. Kochi, Kerala")
+
+with col2:
+    place_type = st.selectbox("🏢 Business Type", [
+        "restaurant", "doctor", "dentist", "gym",
+        "lawyer", "hotel", "beauty_salon", "school"
+    ])
+
+search = st.button("🔍 Search", use_container_width=True)
+
+# ─────────────────────────────────────────
+# Results
+# ─────────────────────────────────────────
+if search:
+    if not location:
+        st.error("Please enter a location!")
+    else:
+        with st.spinner("Searching for businesses..."):
+            coords = get_coordinate(location)
+
+            if coords:
+                results = find_no_website(
+                    location=coords,
+                    radius=5000,
+                    place_type=place_type
+                )
+                results = sorted(results, key=lambda x: x["score"], reverse=True)
+
+                st.success(f"🎯 Found {len(results)} businesses without a website!")
+
+                # ── Summary Stats ──
+                col1, col2, col3 = st.columns(3)
+                urgent = len([r for r in results if r["label"] == "🔴 URGENT"])
+                medium = len([r for r in results if r["label"] == "🟡 MEDIUM"])
+                low    = len([r for r in results if r["label"] == "🟢 LOW"])
+
+                col1.metric("🔴 Urgent", urgent)
+                col2.metric("🟡 Medium", medium)
+                col3.metric("🟢 Low", low)
+
+                st.divider()
+
+                # ── Results Table ──
+                df = pd.DataFrame(results)
+                st.dataframe(
+                    df[["label", "score", "name", "phone", "rating", "reviews", "address", "reasons"]],
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+                st.divider()
+
+                # ── Download Button ──
+                csv = df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="⬇️ Download CSV",
+                    data=csv,
+                    file_name="leads.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+            else:
+                st.error("Could not find that location. Try being more specific e.g. 'Kochi, Kerala'")

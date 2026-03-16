@@ -166,29 +166,3 @@ def save_to_csv(results, filename="results.csv"):
         writer.writerows(results)
 
     print(f"\n✅ Saved {len(results)} businesses to {filename}")
-
-
-place_name = input("Enter a location: ")
-place_type = input("Enter a business type (e.g., restaurant, doctor, gym, lawyer): ")
-location = get_coordinate(place_name)
-
-if location:
-    results = find_no_website(
-        location=location,
-        radius=5000,
-        place_type=place_type
-    )
-
-    results = sorted(results, key=lambda x: x["score"], reverse=True)
-
-    print(f"\n🎯 Found {len(results)} businesses without a website!\n")
-    for b in results:
-        print(f"{b['label']} (Score: {b['score']}/100)")
-        print(f"Name    : {b['name']}")
-        print(f"Phone   : {b['phone']}")
-        print(f"Rating  : {b['rating']} ⭐ ({b['reviews']} reviews)")
-        print(f"Address : {b['address']}")
-        print(f"Why     : {b['reasons']}")
-        print("-" * 40)
-
-    save_to_csv(results)
