@@ -2,9 +2,7 @@ import streamlit as st
 from scraper import get_coordinate, find_no_website, save_to_csv
 import pandas as pd
 
-# ─────────────────────────────────────────
-# Page Config
-# ─────────────────────────────────────────
+
 st.set_page_config(
     page_title="Maps Lead Finder",
     page_icon="📍",
@@ -14,9 +12,7 @@ st.set_page_config(
 st.title("📍 Google Maps Lead Finder")
 st.write("Find businesses without websites — sorted by urgency")
 
-# ─────────────────────────────────────────
-# Inputs
-# ─────────────────────────────────────────
+
 col1, col2 = st.columns(2)
 
 with col1:
@@ -30,9 +26,7 @@ with col2:
 
 search = st.button("🔍 Search", use_container_width=True)
 
-# ─────────────────────────────────────────
-# Results
-# ─────────────────────────────────────────
+
 if search:
     if not location:
         st.error("Please enter a location!")
