@@ -15,10 +15,23 @@ def nearby_search(location, radius, place_type):
         "type": place_type,
         "key": API_KEY
     }
-    response = requests.get(url, params=params)
-    data = response.json()
-    return data.get("results", [])
 
+    all_results = []
+
+    while True:
+        response = requests.get(url, params=params)
+        data = response.json()
+        all_results.extend(data.get("results", []))
+
+        next_page_token = data.get("next_page_token")
+        if not next_page_token:
+            break
+
+        import time
+        time.sleep(2)
+        params = {"pagetoken": next_page_token, "key": API_KEY}
+
+    return all_results
 
 def get_place_details(place_id):
     url = "https://maps.googleapis.com/maps/api/place/details/json"
