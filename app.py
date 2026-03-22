@@ -17,6 +17,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     location = st.text_input("📍 Location", placeholder="e.g. Kochi, Kerala")
+st.caption("Tip: Be specific — use a neighbourhood or landmark for better results e.g. 'Ramankulangara, Kollam' instead of just 'Kollam'")
 
 with col2:
     place_type = st.selectbox("🏢 Business Type", [
