@@ -130,7 +130,7 @@ def find_no_website(location, radius, place_type):
         name    = details.get("name", "N/A")
         website = details.get("website")
         phone   = details.get("formatted_phone_number", "N/A")
-        rating  = details.get("rating", "N/A")
+        rating  = details.get("rating", 0)
         reviews = details.get("user_ratings_total", 0)
         address = details.get("formatted_address", "N/A")
 
