@@ -2,7 +2,6 @@ import streamlit as st
 from scraper import get_coordinate, find_no_website, save_to_csv
 import pandas as pd
 
-
 st.set_page_config(
     page_title="Maps Lead Finder",
     page_icon="📍",
@@ -12,12 +11,11 @@ st.set_page_config(
 st.title("📍 Google Maps Lead Finder")
 st.write("Find businesses without websites — sorted by urgency")
 
-
 col1, col2 = st.columns(2)
 
 with col1:
     location = st.text_input("📍 Location", placeholder="e.g. Kochi, Kerala")
-st.caption("Tip: Be specific — use a neighbourhood or landmark for better results e.g. 'Ramankulangara, Kollam' instead of just 'Kollam'")
+    st.caption("Tip: Be specific — use a neighbourhood or landmark for better results e.g. 'Ramankulangara, Kollam' instead of just 'Kollam'")
 
 with col2:
     place_type = st.selectbox("🏢 Business Type", [
@@ -26,7 +24,6 @@ with col2:
     ])
 
 search = st.button("🔍 Search", use_container_width=True)
-
 
 if search:
     if not location:
@@ -45,7 +42,6 @@ if search:
 
                 st.success(f"🎯 Found {len(results)} businesses without a website!")
 
-                # ── Summary Stats ──
                 col1, col2, col3 = st.columns(3)
                 urgent = len([r for r in results if r["label"] == "🔴 URGENT"])
                 medium = len([r for r in results if r["label"] == "🟡 MEDIUM"])
@@ -57,17 +53,20 @@ if search:
 
                 st.divider()
 
-                # ── Results Table ──
                 df = pd.DataFrame(results)
                 st.dataframe(
-                    df[["label", "score", "name", "phone", "rating", "reviews", "address", "reasons"]],
+                    df[["label", "score", "name", "phone", "rating", "reviews", "address", "reasons", "maps_link"]],
                     use_container_width=True,
-                    hide_index=True
+                    hide_index=True,
+                    column_config={
+                        "reasons": st.column_config.TextColumn(width="large"),
+                        "address": st.column_config.TextColumn(width="medium"),
+                        "maps_link": st.column_config.LinkColumn("Maps", display_text="Open Maps"),
+                    }
                 )
 
                 st.divider()
 
-                # ── Download Button ──
                 csv = df.to_csv(index=False).encode("utf-8")
                 st.download_button(
                     label="⬇️ Download CSV",

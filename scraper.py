@@ -151,13 +151,14 @@ def find_no_website(location, radius, place_type):
 
         if not website:
             business = {
-                "name": name,
-                "phone": phone,
-                "rating": rating,
-                "reviews": reviews,
-                "address": address,
-                "type": place_type
-            }
+                   "name": name,
+                   "phone": phone,
+                   "rating": rating,
+                   "reviews": reviews,
+                   "address": address,
+                   "type": place_type,
+                   "maps_link": f"https://www.google.com/maps/search/?api=1&query=Google&query_place_id={place_id}"
+       }
             urgency = calculate_urgency(business)
             business["score"] = urgency["score"]
             business["label"] = urgency["label"]
