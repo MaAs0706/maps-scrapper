@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📍 Google Maps Lead Finder")
+st.title(" PROSPERA")
 st.write("Find businesses without websites — sorted by urgency")
 
 col1, col2 = st.columns(2)
