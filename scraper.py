@@ -2,6 +2,7 @@ import requests
 import csv
 from dotenv import load_dotenv
 import os
+from groq import Groq
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
@@ -37,12 +38,58 @@ def get_place_details(place_id):
     url = "https://maps.googleapis.com/maps/api/place/details/json"
     params = {
         "place_id": place_id,
-        "fields": "name,website,formatted_phone_number,rating,user_ratings_total,formatted_address",
+        "fields": "name,website,formatted_phone_number,rating,user_ratings_total,formatted_address,reviews",
         "key": API_KEY
     }
     response = requests.get(url, params=params)
     data = response.json()
     return data.get("result", {})
+
+
+def extract_pain_points(reviews):
+    """Extract operational pain points from review text using Groq"""
+    if not reviews or len(reviews) == 0:
+        print(f"DEBUG: No reviews provided")
+        return []
+    
+    print(f"DEBUG: Found {len(reviews)} reviews")
+    
+    # Combine review text (take up to 5 most recent reviews)
+    review_text = "\n".join([r.get("text", "") for r in reviews[:5]])
+    
+    print(f"DEBUG: Review text length: {len(review_text)}")
+    
+    if not review_text.strip():
+        print(f"DEBUG: Review text is empty after stripping")
+        return []
+    
+    try:
+        client = Groq()
+        message = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            max_tokens=100,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""Extract 2-3 operational pain points or service issues from these restaurant reviews. 
+Be specific and concise. Return ONLY as comma-separated tags (e.g., "Long wait times, No online ordering, Understaffed").
+If no clear pain points, just return "No issues noted".
+
+Reviews:
+{review_text}"""
+                }
+            ]
+        )
+        
+        response_text = message.choices[0].message.content
+        print(f"DEBUG: Groq response: {response_text}")
+        tags = response_text.split(",")
+        return [tag.strip() for tag in tags if tag.strip()]
+    except Exception as e:
+        print(f"ERROR extracting pain points: {e}")
+        import traceback
+        traceback.print_exc()
+        return ["Unable to extract"]
 
 
 def get_coordinate(place_name):
@@ -146,10 +193,13 @@ def find_no_website(location, radius, place_type):
         rating  = details.get("rating", 0)
         reviews = details.get("user_ratings_total", 0)
         address = details.get("formatted_address", "N/A")
+        review_data = details.get("reviews", [])
 
         print(f"[{i+1}/{len(places)}] {name} — {'✅ has website' if website else '❌ no website'}")
 
         if not website:
+            pain_points = extract_pain_points(review_data)
+            
             business = {
                    "name": name,
                    "phone": phone,
@@ -157,6 +207,7 @@ def find_no_website(location, radius, place_type):
                    "reviews": reviews,
                    "address": address,
                    "type": place_type,
+                   "pain_points": ", ".join(pain_points) if pain_points else "—",
                    "maps_link": f"https://www.google.com/maps/search/?api=1&query=Google&query_place_id={place_id}"
        }
             urgency = calculate_urgency(business)

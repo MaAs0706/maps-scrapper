@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title(" PROSPERA")
+st.title("🎯 PROSPERA")
 st.write("Find businesses without websites — sorted by urgency")
 
 col1, col2 = st.columns(2)
@@ -29,7 +29,7 @@ if search:
     if not location:
         st.error("Please enter a location!")
     else:
-        with st.spinner("Searching for businesses..."):
+        with st.spinner("Searching for businesses and analyzing reviews..."):
             coords = get_coordinate(location)
 
             if coords:
@@ -55,10 +55,11 @@ if search:
 
                 df = pd.DataFrame(results)
                 st.dataframe(
-                    df[["label", "score", "name", "phone", "rating", "reviews", "address", "reasons", "maps_link"]],
+                    df[["label", "score", "name", "phone", "rating", "reviews", "pain_points", "address", "reasons", "maps_link"]],
                     use_container_width=True,
                     hide_index=True,
                     column_config={
+                        "pain_points": st.column_config.TextColumn(width="medium"),
                         "reasons": st.column_config.TextColumn(width="large"),
                         "address": st.column_config.TextColumn(width="medium"),
                         "maps_link": st.column_config.LinkColumn("Maps", display_text="Open Maps"),
