@@ -37,15 +37,12 @@ def get_place_details(place_id):
     url = "https://maps.googleapis.com/maps/api/place/details/json"
     params = {
         "place_id": place_id,
-        "fields": "name,website,formatted_phone_number,rating,user_ratings_total,formatted_address,reviews",
+        "fields": "name,website,formatted_phone_number,rating,user_ratings_total,formatted_address",
         "key": API_KEY
     }
     response = requests.get(url, params=params)
     data = response.json()
     return data.get("result", {})
-
-
-
 
 
 def get_coordinate(place_name):
@@ -149,7 +146,6 @@ def find_no_website(location, radius, place_type):
         rating  = details.get("rating", 0)
         reviews = details.get("user_ratings_total", 0)
         address = details.get("formatted_address", "N/A")
-        review_data = details.get("reviews", [])
 
         print(f"[{i+1}/{len(places)}] {name} — {'✅ has website' if website else '❌ no website'}")
 
